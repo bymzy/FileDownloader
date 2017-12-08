@@ -36,6 +36,11 @@ public:
         }
         mWorkers.clear();
 
+        for (uint32_t i = 0; i < mDownLoaders.size(); ++i) {
+            delete mDownLoaders[i];
+        }
+        mDownLoaders.clear();
+
         if (mFD != -1) {
             close(mFD);
             mFD = -1;
@@ -50,9 +55,11 @@ public:
         return cc;
     }
 
-    int Init(std::string url, std::string protoType);
+    int Init(std::string url, std::string protoType, std::string fileName);
 
     int StartWork();
+
+    int GetFileSize();
 
     inline int GetExitCode()
     {
@@ -87,15 +94,20 @@ private:
     int CreateWorkers();
     void WaitStop();
     uint32_t GetWorkerCount();
+    Downloader *NewDownloader();
 
 private:
     std::string mURL;
     std::string mProtoType;
+    int mFD;
+    size_t mFileSize;
+    std::string mFileName;
+
     Downloader *mDownloader;
     int mExitCode;
     pthread_mutex_t mMutex;
-    int mFD;
     std::vector<Worker*> mWorkers;
+    std::vector<Downloader*> mDownLoaders;
 };
 
 #endif

@@ -26,7 +26,7 @@ int  main()
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&flag);
         res = curl_easy_perform(curl);
 
-        if (!res) {
+        if (CURLE_OK == res) {
             double cl;
             res = curl_easy_getinfo(curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &cl);
             if (!res) {
