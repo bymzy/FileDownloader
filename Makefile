@@ -12,11 +12,14 @@ OBJS=${patsubst ${SOURCEDIR}/%.cpp, ${OBJDIR}/%.o, ${SOURCES}}
 ${BINDIR}/${TARGET}:${OBJS}
 	${XX} ${LIB} -o ${BINDIR}/${TARGET} ${OBJS}
 
-${OBJS}:${SOURCES}
-	@for src in `echo ${SOURCES}`; do\
-		obj=`echo $$src | sed "s/src/objs/" | sed "s/\.cpp/\.o/"`;\
-		${XX} -c $$src -o $$obj ${MARCOS} ${CXXFLAGS};\
-	done\
+${OBJDIR}/%.o:${SOURCEDIR}/%.cpp
+	${XX} -c $< -o $@ ${MARCOS} ${CXXFLAGS}
+	
+#${OBJS}:${SOURCES}
+#	@for src in `echo ${SOURCES}`; do\
+#		obj=`echo $$src | sed "s/src/objs/" | sed "s/\.cpp/\.o/"`;\
+#		${XX} -c $$src -o $$obj ${MARCOS} ${CXXFLAGS};\
+#	done\
 
 help:
 	@echo "... clean (rm objs and bin)"

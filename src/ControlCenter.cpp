@@ -6,7 +6,6 @@
 #include "Log.hpp"
 #include "Error.hpp"
 #include "HttpDownloader.hpp"
-#include "FtpDownloader.hpp"
 #include "ControlCenter.hpp"
 #include "Worker.hpp"
 
