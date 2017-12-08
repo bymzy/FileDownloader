@@ -51,6 +51,7 @@ int ControlCenter::GetFileSize()
 {
     int err = 0;
     CURL *handle= curl_easy_init();
+    double cl = 0;
 
     do {
         if (NULL == handle) {
@@ -62,7 +63,8 @@ int ControlCenter::GetFileSize()
         curl_easy_setopt(handle, CURLOPT_NOBODY, 1);
 
         if (curl_easy_perform(handle) == CURLE_OK) {
-            curl_easy_getinfo(handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &mFileSize);
+            curl_easy_getinfo(handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &cl);
+            mFileSize = uint64_t(cl);
         } else {
             err = E_CURL_GET_FILE_SIZE;
             break;
@@ -78,10 +80,10 @@ uint32_t ControlCenter::GetWorkerCount()
     /* TODO get cpu count and determine it */
     uint32_t count = 0;
 
-    count = mFileSize / ControlCenter::ChunkSize / MaxJobCountPerWorker;
+    count = mFileSize / ControlCenter::ChunkSize;
     count += 1;
 
-    return count;
+    return 1;
 }
 
 Downloader *ControlCenter::NewDownloader()

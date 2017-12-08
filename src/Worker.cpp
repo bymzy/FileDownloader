@@ -84,7 +84,7 @@ bool Worker::IsSystemRunning()
     } else if (!mCC->IsSystemRunning()) {
         ret = false;
     }
-    return false;
+    return ret;
 }
 
 
