@@ -2,24 +2,30 @@ XX=g++
 CXXFLAGS=-g
 TARGET=FileGet
 LIB=-lcurl -pthread
+MARCOS=-D_LARGEFILE64_SOURCE -D _LARGEFILE_SOURCE -D_LARGE_FILES -D _FILE_OFFSET_BITS=64
+
 SOURCEDIR=src
 OBJDIR=objs
 BINDIR=bin
-MARCOS=-D_LARGEFILE64_SOURCE -D _LARGEFILE_SOURCE -D_LARGE_FILES -D _FILE_OFFSET_BITS=64
+
 SOURCES=${wildcard ${SOURCEDIR}/*.cpp}
 OBJS=${patsubst ${SOURCEDIR}/%.cpp, ${OBJDIR}/%.o, ${SOURCES}}
+OBJDEPS=${OBJS:.o=.d}
 
-${BINDIR}/${TARGET}:${OBJS}
+${BINDIR}/${TARGET}:${OBJS} ${OBJDEPS}
 	${XX} ${LIB} -o ${BINDIR}/${TARGET} ${OBJS}
 
 ${OBJDIR}/%.o:${SOURCEDIR}/%.cpp
 	${XX} -c $< -o $@ ${MARCOS} ${CXXFLAGS}
-	
-#${OBJS}:${SOURCES}
-#	@for src in `echo ${SOURCES}`; do\
-#		obj=`echo $$src | sed "s/src/objs/" | sed "s/\.cpp/\.o/"`;\
-#		${XX} -c $$src -o $$obj ${MARCOS} ${CXXFLAGS};\
-#	done\
+
+${OBJDIR}/%.d:${SOURCEDIR}/%.cpp
+	@${XX} -MM -c $< | sed '/\.o/ s/^/${OBJDIR}\//' >$@
+
+-include ${OBJDEPS}
+
+output:
+	echo ${OBJS}
+	echo ${OBJDEPS}
 
 help:
 	@echo "... clean (rm objs and bin)"
@@ -33,5 +39,5 @@ info:
 .PHONY : info
 
 clean:
-	@rm -rf ${OBJS} ${BINDIR}/${TARGET}
+	@rm -rf ${OBJS} ${BINDIR}/${TARGET} ${OBJDEPS}
 .PHONY : clean

@@ -4,6 +4,7 @@
 #include <vector>
 #include "Worker.hpp"
 #include "ControlCenter.hpp"
+#include "Log.hpp"
 
 int Worker::Start()
 {
