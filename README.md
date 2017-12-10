@@ -3,8 +3,8 @@
     Hope Enjoy it!
 
 ## How To build
-    run ```# sh build.sh```, and it is in bin dir.
+    run `# sh build.sh`, and it is in bin dir.
 
-##writen by mzy for fun
+## writen by mzy for fun
     2017/12/7
 
