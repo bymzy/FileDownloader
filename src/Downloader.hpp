@@ -7,6 +7,8 @@
 #include <errno.h>
 #include <string>
 
+#include "Log.hpp"
+
 typedef struct _FileInfo{
     int fd;
     off_t offset;
@@ -55,7 +57,6 @@ public:
         return blockCount * memBlockSize;
     }
 
-    virtual int GetMetaData() = 0;
     virtual int GetFileChunk(FileInfo* fileInfo) = 0;
 
 public:

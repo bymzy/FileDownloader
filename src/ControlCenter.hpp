@@ -13,7 +13,7 @@ class ControlCenter
 {
 public:
     enum Config{
-        ChunkSize = 64 << 10,
+        ChunkSize = 256 << 10, /* 256K */
         MaxJobCountPerWorker = 200,
     };
 
@@ -23,6 +23,7 @@ public:
         pthread_mutex_init(&mMutex, NULL);
         mFD = -1;
         mExitCode = 0;
+        mServerSupportRange = false;
     }
     ~ControlCenter()
     {
@@ -100,6 +101,7 @@ private:
 private:
     std::string mURL;
     std::string mProtoType;
+    bool mServerSupportRange;
     int mFD;
     size_t mFileSize;
     std::string mFileName;

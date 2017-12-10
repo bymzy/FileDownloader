@@ -5,14 +5,17 @@
 
 #include <iostream>
 
-#define DEBUG_LOG(data) do {\
-        std::cout << "DEBUG: " << data << __PRETTY_FUNCTION__ << ":" << __LINE__ << std::endl;\
-    } while(0);\
+#define DEBUG_LOG(data)\
+    {\
+        std::cout << std::boolalpha << data << " [DEBUG] ["\
+           << __FILE__ << ":"<< __LINE__<< ":" << __FUNCTION__ << "]\n";\
+}\
 
-#define ERROR_LOG(data) do {\
-        std::cerr << "ERROR: " << data << __PRETTY_FUNCTION__ << ":" << __LINE__ << std::endl;\
-    } while(0);\
+
+#define ERROR_LOG(data)\
+    {\
+        std::cout << std::boolalpha << data << " [ERROR] ["\
+           << __FILE__ << ":"<< __LINE__<< ":" << __FUNCTION__ << "]\n";\
+}\
 
 #endif
-
-

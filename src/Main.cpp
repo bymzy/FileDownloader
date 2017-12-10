@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
         cc = ControlCenter::Instance();
         assert(NULL != cc);
 
-        err = cc->Init(url, protoType, "File");
+        err = cc->Init(url, protoType, url);
         if (0 != err) {
             break;
         }

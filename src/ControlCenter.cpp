@@ -3,6 +3,8 @@
 #include <errno.h>
 #include <curl/curl.h>
 #include <fcntl.h>
+#include <sys/sysinfo.h>
+
 #include "Log.hpp"
 #include "Error.hpp"
 #include "HttpDownloader.hpp"
@@ -16,8 +18,13 @@ int ControlCenter::Init(std::string url, std::string protoType, std::string file
     do {
         mProtoType = protoType;
         mURL = url;
-        mFileName = fileName;
-        
+        size_t pos = fileName.find_last_of("/");
+        if (pos != std::string::npos) {
+            mFileName = fileName.substr(pos + 1);
+        } else {
+            mFileName = fileName;
+        }
+
         /* curl global init */
         CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
         if (CURLE_OK != res) {
@@ -42,8 +49,18 @@ int ControlCenter::Init(std::string url, std::string protoType, std::string file
 
     } while(0);
 
-    DEBUG_LOG("init, error: " << err);
+    DEBUG_LOG("init, error: " << err
+            << ", file name: " << mFileName
+            << ", file size: " << mFileSize);
     return err;
+}
+
+static size_t GetHeader(char *ptr, size_t blockCount, size_t memBlockSize, void *arg)
+{
+    std::string *str = (std::string*)arg;
+    (*str) += std::string(ptr);
+
+    return blockCount * memBlockSize;
 }
 
 int ControlCenter::GetFileSize()
@@ -51,6 +68,8 @@ int ControlCenter::GetFileSize()
     int err = 0;
     CURL *handle= curl_easy_init();
     double cl = 0;
+    std::string header;
+    CURLcode ecode;
 
     do {
         if (NULL == handle) {
@@ -60,13 +79,30 @@ int ControlCenter::GetFileSize()
         curl_easy_setopt(handle, CURLOPT_URL, mURL.c_str());
         curl_easy_setopt(handle, CURLOPT_HEADER, 1);
         curl_easy_setopt(handle, CURLOPT_NOBODY, 1);
+        curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, GetHeader);
+        curl_easy_setopt(handle, CURLOPT_WRITEDATA, &header);
+        curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
 
-        if (curl_easy_perform(handle) == CURLE_OK) {
-            curl_easy_getinfo(handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &cl);
-            mFileSize = uint64_t(cl);
+        ecode = curl_easy_perform(handle);
+        if (ecode == CURLE_OK) {
+            ecode = curl_easy_getinfo(handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &cl);
+            if (CURLE_OK != ecode) {
+                err = E_CURL_GET_FILE_SIZE;
+            }
+            mFileSize = cl;
         } else {
             err = E_CURL_GET_FILE_SIZE;
             break;
+        }
+
+        if (0 != err) {
+            ERROR_LOG("GetFileSize, failed, error: " << curl_easy_strerror(ecode)); 
+        }
+
+        /* check if server support range download */
+        if (header.find("Accept-Ranges: bytes") != std::string::npos) {
+            DEBUG_LOG("Range Download is supported on file server!!!");
+            mServerSupportRange = true;
         }
 
     } while(0);
@@ -82,7 +118,15 @@ uint32_t ControlCenter::GetWorkerCount()
     count = mFileSize / ControlCenter::ChunkSize;
     count += 1;
 
-    return 1;
+    if (mServerSupportRange) {
+        count = get_nprocs() * 2;
+    } else {
+        count = 1;
+        DEBUG_LOG("Server not support range download, so create 1 worker!");
+    }
+
+    DEBUG_LOG("Worker count is: " << count);
+    return count;
 }
 
 Downloader *ControlCenter::NewDownloader()
@@ -113,6 +157,7 @@ int ControlCenter::CreateWorkers()
     std::deque<Job*> jobQ;
     FileInfo info;
     info.fd = mFD;
+    info.mErr = 0;
 
     uint32_t chunkCount = 0;
     for (uint32_t i = 0; i < workerCount; ++i) {
@@ -156,11 +201,14 @@ int ControlCenter::CreateWorkers()
             jobQ.push_back(job);
         }
 
+        DEBUG_LOG("Start worker-" << i << ", jobQ size: " << jobQ.size());
+
         wk->SetJobs(jobQ);
         err = wk->Start();
         if (0 != err) {
             break;
         }
+
     }
 
     return err;
@@ -197,6 +245,7 @@ int ControlCenter::StartWork()
         }
     } while(0);
 
+    DEBUG_LOG("StartWork, error: " << err);
     return err;
 }
 

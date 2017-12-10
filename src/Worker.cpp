@@ -44,29 +44,6 @@ void Worker::Run()
         mExitCode = err;
         delete job;
         job = NULL;
-#if 0
-        pthread_mutex_lock(&mMutex);
-        while (mJobs.size() <=0 && IsSystemRunning()) {
-            pthread_cond_wait(&mCond, &mMutex);
-        }
-
-        if (!IsSystemRunning()) {
-            pthread_mutex_unlock(&mMutex);
-            break;
-        }
-
-        jobVec.assign(mJobs.begin(), mJobs.end());
-        mJobs.clear();
-        pthread_mutex_unlock(&mMutex);
-
-        for (size_t i=0; i < jobVec.size(); ++i) {
-            job = jobVec[i];
-            delete job;
-            job = NULL;
-        }
-
-        jobVec.clear();
-#endif
     }
 
     /*mJobs may be not empty, release it in ~Worker() */
