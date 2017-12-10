@@ -4,6 +4,8 @@
 #ifndef __UTIL_HPP__
 #define __UTIL_HPP__
 
+#include "Log.hpp"
+
 void Usage()
 {
     std::string usage = "\nUsage: FileDownload -t <PROTOTYPE> -u <URL>\n"\
@@ -27,7 +29,7 @@ int ParseArgs(int argc, char *argv[], std::string& protoType, std::string& url)
                 url = std::string(optarg);
                 break;
             default:
-                std::cerr << "invalid arg: " << opt << std::endl;
+                ERROR_LOG("invalid arg: " << opt); 
                 err = EINVAL;
                 break;
         }
@@ -38,12 +40,17 @@ int ParseArgs(int argc, char *argv[], std::string& protoType, std::string& url)
     }
 
     if (protoType.empty()) {
-        std::cerr << "-t <PROTOTYPE> is requested" << std::endl;
+        ERROR_LOG("-t <PROTOTYPE> is requested");
+        err = EINVAL;
+    }
+
+    if (protoType != "HTTP") {
+        ERROR_LOG("invalid protoType, current support HTTP only");
         err = EINVAL;
     }
 
     if (url.empty()) {
-        std::cerr << "-u <URL> is requested" << std::endl;
+        ERROR_LOG("-u <URL> is requested");
         err = EINVAL;
     }
 

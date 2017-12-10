@@ -13,12 +13,15 @@ OBJS=${patsubst ${SOURCEDIR}/%.cpp, ${OBJDIR}/%.o, ${SOURCES}}
 OBJDEPS=${OBJS:.o=.d}
 
 ${BINDIR}/${TARGET}:${OBJS} ${OBJDEPS}
+	${shell mkdir -p ${BINDIR}}
 	${XX} ${LIB} -o ${BINDIR}/${TARGET} ${OBJS}
 
 ${OBJDIR}/%.o:${SOURCEDIR}/%.cpp
+	${shell mkdir -p ${OBJDIR}}
 	${XX} -c $< -o $@ ${MARCOS} ${CXXFLAGS}
 
 ${OBJDIR}/%.d:${SOURCEDIR}/%.cpp
+	${shell mkdir -p ${OBJDIR}}
 	@${XX} -MM -c $< | sed '/\.o/ s/^/${OBJDIR}\//' >$@
 
 -include ${OBJDEPS}

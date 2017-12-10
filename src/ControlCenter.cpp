@@ -136,8 +136,6 @@ Downloader *ControlCenter::NewDownloader()
     /* new specific downloader according to proto type */
     if (mProtoType == "HTTP") {
         dl = new HttpDownloader(mURL);
-    } else if (mProtoType == "FTP") {
-        dl = new HttpDownloader(mURL);
     } 
 
     return dl;
