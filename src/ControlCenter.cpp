@@ -115,11 +115,11 @@ uint32_t ControlCenter::GetWorkerCount()
     /* TODO get cpu count and determine it */
     uint32_t count = 0;
 
-    count = mFileSize / ControlCenter::ChunkSize;
-    count += 1;
-
     if (mServerSupportRange) {
         count = get_nprocs() * 2;
+        if (mFileSize < (count * ControlCenter::ChunkSize)) {
+            count = mFileSize / ControlCenter::ChunkSize + 1;
+        }
     } else {
         count = 1;
         DEBUG_LOG("Server not support range download, so create 1 worker!");
