@@ -46,7 +46,6 @@ public:
             err = (fileInfo->mErr == 0 ? err : fileInfo->mErr);
         }
 
-        //DEBUG_LOG("GetFileChunk done, range: " << rangeString << ", error: " << err);
         return err;
     }
 };

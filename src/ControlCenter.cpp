@@ -11,18 +11,21 @@
 #include "ControlCenter.hpp"
 #include "Worker.hpp"
 
-int ControlCenter::Init(std::string url, std::string protoType, std::string fileName)
+int ControlCenter::Init(const std::string& url,
+        const std::string& protoType)
 {
     int err = 0;
+    size_t pos = 0;
 
     do {
         mProtoType = protoType;
         mURL = url;
-        size_t pos = fileName.find_last_of("/");
+
+        pos = url.find_last_of("/");
         if (pos != std::string::npos) {
-            mFileName = fileName.substr(pos + 1);
+            mFileName = url.substr(pos + 1);
         } else {
-            mFileName = fileName;
+            mFileName = url;
         }
 
         /* curl global init */
@@ -53,6 +56,30 @@ int ControlCenter::Init(std::string url, std::string protoType, std::string file
             << ", file name: " << mFileName
             << ", file size: " << mFileSize);
     return err;
+}
+
+int ControlCenter::Finit()
+{
+    
+    for(uint32_t i = 0; i < mWorkers.size(); ++i) {
+        mWorkers[i]->WaitStop();
+        delete mWorkers[i];
+    }
+    mWorkers.clear();
+
+    for (uint32_t i = 0; i < mDownLoaders.size(); ++i) {
+        delete mDownLoaders[i];
+    }
+    mDownLoaders.clear();
+
+    curl_global_cleanup();
+
+    if (mFD != -1) {
+        close(mFD);
+        mFD = -1;
+    }
+
+    return 0;
 }
 
 static size_t GetHeader(char *ptr, size_t blockCount, size_t memBlockSize, void *arg)
@@ -112,7 +139,7 @@ int ControlCenter::GetFileSize()
 
 uint32_t ControlCenter::GetWorkerCount()
 {
-    /* TODO get cpu count and determine it */
+    /* get cpu count and determine it */
     uint32_t count = 0;
 
     if (mServerSupportRange) {
@@ -219,10 +246,6 @@ void ControlCenter::WaitStop()
         delete mWorkers[i];
     }
     mWorkers.clear();
-
-    if (mFD != -1) {
-        close(mFD);
-    }
 }
 
 int ControlCenter::StartWork()

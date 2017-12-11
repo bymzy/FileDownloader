@@ -23,10 +23,10 @@ int main(int argc, char *argv[])
             break;
         }
 
-        cc = ControlCenter::Instance();
+        cc = new ControlCenter();
         assert(NULL != cc);
 
-        err = cc->Init(url, protoType, url);
+        err = cc->Init(url, protoType);
         if (0 != err) {
             break;
         }
@@ -37,6 +37,13 @@ int main(int argc, char *argv[])
         }
 
     } while(0);
+
+    if (NULL != cc) {
+        cc->Finit();
+
+        delete cc;
+        cc = NULL;
+    }
 
     return err;
 }

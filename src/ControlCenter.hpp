@@ -9,12 +9,12 @@
 #include "Downloader.hpp"
 #include "Worker.hpp"
 
+
 class ControlCenter
 {
 public:
     enum Config{
         ChunkSize = 256 << 10, /* 256K */
-        MaxJobCountPerWorker = 200,
     };
 
 public:
@@ -27,37 +27,13 @@ public:
     }
     ~ControlCenter()
     {
-        if (mDownloader != NULL) {
-            delete mDownloader;
-            mDownloader = NULL;
-        }
-        
-        for(uint32_t i = 0; i < mWorkers.size(); ++i) {
-            mWorkers[i]->WaitStop();
-            delete mWorkers[i];
-        }
-        mWorkers.clear();
-
-        for (uint32_t i = 0; i < mDownLoaders.size(); ++i) {
-            delete mDownLoaders[i];
-        }
-        mDownLoaders.clear();
-
-        if (mFD != -1) {
-            close(mFD);
-            mFD = -1;
-        }
         pthread_mutex_destroy(&mMutex);
     }
 
 public:
-    static ControlCenter* Instance()
-    {
-        static ControlCenter *cc = new ControlCenter();
-        return cc;
-    }
+    int Init(const std::string& url, const std::string& protoType);
 
-    int Init(std::string url, std::string protoType, std::string fileName);
+    int Finit();
 
     int StartWork();
 
@@ -106,7 +82,6 @@ private:
     size_t mFileSize;
     std::string mFileName;
 
-    Downloader *mDownloader;
     int mExitCode;
     pthread_mutex_t mMutex;
     std::vector<Worker*> mWorkers;

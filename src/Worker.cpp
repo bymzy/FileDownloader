@@ -23,7 +23,12 @@ int Worker::Start()
 
 void Worker::WaitStop()
 {
-    pthread_join(mThreadId, NULL);
+    if (-1 != mThreadId) {
+        pthread_join(mThreadId, NULL);
+        mThreadId = -1;
+    }
+
+    return;
 }
 
 void Worker::Run()

@@ -8,6 +8,8 @@
 #include <string>
 
 #include "Log.hpp"
+#include "Error.hpp"
+#include "string.h"
 
 typedef struct _FileInfo{
     int fd;
@@ -44,6 +46,8 @@ public:
             ret = pwrite(info->fd, ptr + writed, toWrite, offset);
             if (ret < 0) {
                 info->mErr = errno;
+                ERROR_LOG("pwrite failed, error: " << errno
+                        << ", errstr: " << strerror(errno));
                 break;
             }
 
@@ -74,7 +78,7 @@ public:
     {
         mCURL = curl_easy_init();
         if (mCURL == NULL) {
-            return 1;
+            return E_CURL_EASY_INIT;
         }
 
         curl_easy_setopt(mCURL, CURLOPT_URL, mURL.c_str());
