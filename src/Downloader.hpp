@@ -61,14 +61,13 @@ public:
         return blockCount * memBlockSize;
     }
 
+    /* Get chunk of file */
     virtual int GetFileChunk(FileInfo* fileInfo) = 0;
 
-public:
-    inline size_t GetFileSize()
-    {
-        return mFileSize;
-    }
+    /* Get file total size */
+    virtual int GetFileSize(uint64_t &fileSize, bool &supportRange) = 0;
 
+public:
     CURL *GetHandle()
     {
         return mCURL;

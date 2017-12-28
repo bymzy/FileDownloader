@@ -23,6 +23,7 @@ public:
         pthread_mutex_init(&mMutex, NULL);
         mFD = -1;
         mExitCode = 0;
+        mFileSize = 0;
         mServerSupportRange = false;
     }
     ~ControlCenter()

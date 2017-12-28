@@ -82,58 +82,16 @@ int ControlCenter::Finit()
     return 0;
 }
 
-static size_t GetHeader(char *ptr, size_t blockCount, size_t memBlockSize, void *arg)
-{
-    std::string *str = (std::string*)arg;
-    (*str) += std::string(ptr);
-
-    return blockCount * memBlockSize;
-}
-
 int ControlCenter::GetFileSize()
 {
     int err = 0;
-    CURL *handle= curl_easy_init();
-    double cl = 0;
-    std::string header;
-    CURLcode ecode;
-
-    do {
-        if (NULL == handle) {
-            err = E_CURL_EASY_INIT;
-            break;
-        }
-        curl_easy_setopt(handle, CURLOPT_URL, mURL.c_str());
-        curl_easy_setopt(handle, CURLOPT_HEADER, 1);
-        curl_easy_setopt(handle, CURLOPT_NOBODY, 1);
-        curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, GetHeader);
-        curl_easy_setopt(handle, CURLOPT_WRITEDATA, &header);
-        curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
-
-        ecode = curl_easy_perform(handle);
-        if (ecode == CURLE_OK) {
-            ecode = curl_easy_getinfo(handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &cl);
-            if (CURLE_OK != ecode) {
-                err = E_CURL_GET_FILE_SIZE;
-            }
-            mFileSize = cl;
-        } else {
-            err = E_CURL_GET_FILE_SIZE;
-            break;
-        }
-
-        if (0 != err) {
-            ERROR_LOG("GetFileSize, failed, error: " << curl_easy_strerror(ecode)); 
-        }
-
-        /* check if server support range download */
-        if (header.find("Accept-Ranges: bytes") != std::string::npos) {
-            DEBUG_LOG("Range Download is supported on file server!!!");
-            mServerSupportRange = true;
-        }
-
-    } while(0);
-
+    Downloader *dl = NewDownloader();
+    dl->Init();
+    err = dl->GetFileSize(mFileSize, mServerSupportRange);
+    if (NULL != dl) {
+        delete dl;
+        dl = NULL;
+    }
     return err;
 }
 
