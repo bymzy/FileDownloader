@@ -9,25 +9,33 @@
 
 void Usage()
 {
-    std::string usage = "\nUsage: FileDownload -t <PROTOTYPE> -u <URL>\n"\
+    std::string usage = "\nUsage: fget [-t <PROTOTYPE>] [-u <URL>] [-o <file>] [-v] [URL] \n"\
                         "\t-t proto to use to download the target file\n"\
                         "\t\tcurrent supports HTTP\n"\
-                        "\t-u url of the target file\n";
+                        "\t-u url of the target file\n"\
+                        "\t-o output file name \n"\
+                        "\t-v verbose output \n";
 
     std::cout << usage << std::endl;
 }
 
-int ParseArgs(int argc, char *argv[], std::string& protoType, std::string& url)
+int ParseArgs(int argc, char *argv[], std::string& protoType, std::string& url, bool& quite_output, std::string& output_file_name)
 {
     int err = 0;
     int opt;
-    while ((opt = getopt(argc, argv, "t:u:")) != -1) {
+    while ((opt = getopt(argc, argv, "t:u:vo:")) != -1) {
         switch(opt) {
             case 't':
                 protoType = std::string(optarg);
                 break;
             case 'u':
                 url = std::string(optarg);
+                break;
+            case 'v':
+                quite_output = false;
+                break;
+            case 'o':
+                output_file_name = std::string(optarg);
                 break;
             default:
                 ERROR_LOG("invalid arg: " << opt); 
@@ -40,9 +48,15 @@ int ParseArgs(int argc, char *argv[], std::string& protoType, std::string& url)
         }
     }
 
+    if (optind < argc) {
+        url = std::string(argv[optind]);
+    }
+
+
     if (protoType.empty()) {
-        ERROR_LOG("-t <PROTOTYPE> is requested");
-        err = EINVAL;
+        //ERROR_LOG("-t <PROTOTYPE> is requested");
+        //err = EINVAL;
+        protoType = "HTTP";
     }
 
     if (protoType != "HTTP") {

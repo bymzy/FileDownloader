@@ -9,6 +9,9 @@
 #include "Util.hpp"
 #include "ControlCenter.hpp"
 
+bool g_quiet_output = true;
+std::string g_output_file_name;
+
 int main(int argc, char *argv[])
 {
     int err = 0;
@@ -17,7 +20,7 @@ int main(int argc, char *argv[])
     ControlCenter *cc = NULL;
 
     do {
-        err = ParseArgs(argc, argv, protoType, url);
+        err = ParseArgs(argc, argv, protoType, url, g_quiet_output, g_output_file_name);
         if (0 != err) {
             Usage();
             break;

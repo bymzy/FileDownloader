@@ -61,6 +61,9 @@ public:
         return blockCount * memBlockSize;
     }
 
+    /* Get whole file */
+    virtual int GetWholeFile(FileInfo* fileInfo) = 0;
+
     /* Get chunk of file */
     virtual int GetFileChunk(FileInfo* fileInfo) = 0;
 

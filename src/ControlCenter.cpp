@@ -11,6 +11,8 @@
 #include "ControlCenter.hpp"
 #include "Worker.hpp"
 
+extern std::string g_output_file_name;
+
 int ControlCenter::Init(const std::string& url,
         const std::string& protoType)
 {
@@ -26,6 +28,10 @@ int ControlCenter::Init(const std::string& url,
             mFileName = url.substr(pos + 1);
         } else {
             mFileName = url;
+        }
+
+        if (!g_output_file_name.empty()) {
+            mFileName = g_output_file_name;
         }
 
         /* curl global init */
@@ -157,31 +163,38 @@ int ControlCenter::CreateWorkers()
             break;
         }
 
-        beginOffset = i * (mFileSize / workerCount);
-        if (i < workerCount - 1) {
-            size = mFileSize / workerCount;
-        } else {
-            size = mFileSize - (mFileSize / workerCount) * (workerCount - 1);
-        }
-
-        if (size % ControlCenter::ChunkSize == 0) {
-            chunkCount = size / ControlCenter::ChunkSize;
-        } else {
-            chunkCount = size / ControlCenter::ChunkSize + 1;
-        }
-
-        for (uint32_t j = 0; j < chunkCount; ++j) {
-            info.offset = beginOffset + j * ControlCenter::ChunkSize;
-
-            if (j < chunkCount - 1) {
-                info.size = ControlCenter::ChunkSize;
+        if (mFileSize > 0) {
+            beginOffset = i * (mFileSize / workerCount);
+            if (i < workerCount - 1) {
+                size = mFileSize / workerCount;
             } else {
-                info.size = size - (chunkCount - 1) * ControlCenter::ChunkSize;
+                size = mFileSize - (mFileSize / workerCount) * (workerCount - 1);
             }
 
-            job = new Job(dl);
-            job->SetFileInfo(info);
-            jobQ.push_back(job);
+            if (size % ControlCenter::ChunkSize == 0) {
+                chunkCount = size / ControlCenter::ChunkSize;
+            } else {
+                chunkCount = size / ControlCenter::ChunkSize + 1;
+            }
+
+            for (uint32_t j = 0; j < chunkCount; ++j) {
+                info.offset = beginOffset + j * ControlCenter::ChunkSize;
+
+                if (j < chunkCount - 1) {
+                    info.size = ControlCenter::ChunkSize;
+                } else {
+                    info.size = size - (chunkCount - 1) * ControlCenter::ChunkSize;
+                }
+
+                job = new Job(dl);
+                job->SetFileInfo(info);
+                jobQ.push_back(job);
+            }
+        } else {
+                job = new Job(dl, true);
+                job->SetFileInfo(info);
+                jobQ.push_back(job);
+
         }
 
         DEBUG_LOG("Start worker-" << i << ", jobQ size: " << jobQ.size());

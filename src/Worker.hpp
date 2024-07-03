@@ -38,6 +38,7 @@ public:
     {
         Worker *wk = (Worker*)arg;
         wk->Run();
+        return reinterpret_cast<void*>(0);
     }
 
 public:

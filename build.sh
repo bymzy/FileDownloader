@@ -4,7 +4,7 @@ echo "-step1: make objs dir"
 mkdir -p objs
 
 echo "-step2: check libcurl"
-rpm -qa | grep "libcurl"
+rpm -qa | grep "libcurl-devel"
 if [ $? -ne 0 ]
 then
     yum -y install libcurl-devel

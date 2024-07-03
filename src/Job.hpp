@@ -11,7 +11,7 @@
 class Job
 {
 public:
-    Job(Downloader *dl, uint32_t retryCount = 5): mDownloader(dl), mRetryCount(retryCount)
+    Job(Downloader *dl, bool wholeFileJob = false, uint32_t retryCount = 5): mDownloader(dl), mWholeFileJob(wholeFileJob), mRetryCount(retryCount)
     {
     }
     ~Job()
@@ -22,7 +22,11 @@ public:
     int DoJob()
     {
         int err = 0;
-        err = mDownloader->GetFileChunk(&mFileInfo);
+        if (mWholeFileJob) {
+            err = mDownloader->GetFileChunk(&mFileInfo);
+        } else {
+            err = mDownloader->GetWholeFile(&mFileInfo);
+        }
 
         return err;
     }
@@ -41,6 +45,7 @@ private:
     uint32_t mRetryCount;
     Downloader *mDownloader;
     FileInfo mFileInfo;
+    bool mWholeFileJob;
 };
 
 #endif
